@@ -14,10 +14,13 @@ import androidx.core.content.pm.ShortcutManagerCompat
 import androidx.core.content.pm.ShortcutInfoCompat
 import androidx.core.graphics.drawable.IconCompat
 
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.MainScope
+
 /**
  * This activity receives share requests from other applications
  */
-class ShareReceiver : AppCompatActivity() {
+class ShareReceiver : AppCompatActivity(), CoroutineScope by MainScope()  {
     private val TAG="ShareReceiver"
 
     fun getLastPathPart(uri:Uri):String? {
@@ -78,23 +81,26 @@ class ShareReceiver : AppCompatActivity() {
 	if(filename == null) {
 	    filename="file"
 	}
-	var mimeType:String? = intent.type
-	if(mimeType=="null")
-	    mimeType="text/plain"
-	val inStream:InputStream =  contentResolver.openInputStream(srcUri)!!
 
-	val destFile:DocumentFile = DocumentFile
-	    .fromTreeUri(this, treeUri)
-	    ?.createFile(mimeType!!,filename)!!
+	launch {
+	    var mimeType:String? = intent.type
+	    if(mimeType=="null")
+		mimeType="text/plain"
+	    val inStream:InputStream =  contentResolver.openInputStream(srcUri)!!
 
-	val outStream:OutputStream =
-	    contentResolver.openOutputStream(destFile.uri)!!
+	    val destFile:DocumentFile = DocumentFile
+		.fromTreeUri(this@ShareReceiver, treeUri)
+		?.createFile(mimeType!!,filename)!!
 
-	// copy input to output
-	inStream.transferTo(outStream);
-	inStream.close()
-	outStream.close()
-	finish()
+	    val outStream:OutputStream =
+		contentResolver.openOutputStream(destFile.uri)!!
+
+	    // copy input to output
+	    inStream.transferTo(outStream);
+	    inStream.close()
+	    outStream.close()
+	    runOnUiThread { finish() }
+	}
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
