@@ -16,6 +16,7 @@ import androidx.core.graphics.drawable.IconCompat
 
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.MainScope
+import kotlinx.coroutines.launch
 
 /**
  * This activity receives share requests from other applications
@@ -73,7 +74,8 @@ class ShareReceiver : AppCompatActivity(), CoroutineScope by MainScope()  {
     fun saveFileTo(treeUri:Uri) {
 	var srcUri:Uri? = intent.getData()
 	if(srcUri==null) {
-	    val o:Any?=intent.extras?.get(Intent.EXTRA_STREAM)
+	    val o:Any?=
+		@Suppress("DEPRECATION") intent.getParcelableExtra(Intent.EXTRA_STREAM)
 	    if(o is Uri)
 		srcUri=o
 	}
