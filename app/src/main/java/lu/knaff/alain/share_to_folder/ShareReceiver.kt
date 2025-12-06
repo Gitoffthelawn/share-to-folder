@@ -108,10 +108,9 @@ class ShareReceiver : AppCompatActivity(), CoroutineScope by MainScope()  {
 
     override fun onCreate(savedInstanceState: Bundle?) {
 	super.onCreate(savedInstanceState)
-	var key:String?=null
-	@TargetApi(29) {
-	    key = intent.getStringExtra(Intent.EXTRA_SHORTCUT_ID)
-	}
+	val key =
+	    @TargetApi(29)
+	    intent.getStringExtra(Intent.EXTRA_SHORTCUT_ID)
 	if(key != null) {
 	    val uri=Uri.parse(key)
 	    addOrRefreshShortcut(uri,false)
