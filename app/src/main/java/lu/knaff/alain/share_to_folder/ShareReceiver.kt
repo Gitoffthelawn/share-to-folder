@@ -2,9 +2,11 @@ package lu.knaff.alain.share_to_folder
 
 import java.io.InputStream
 import java.io.OutputStream
+import java.net.URLDecoder
 
 import android.os.Bundle
 import android.content.Intent
+import android.app.AlertDialog
 import android.util.Log
 import android.net.Uri
 import androidx.appcompat.app.AppCompatActivity
@@ -112,11 +114,29 @@ class ShareReceiver : AppCompatActivity(), CoroutineScope by MainScope()  {
 	    @TargetApi(29)
 	    intent.getStringExtra(Intent.EXTRA_SHORTCUT_ID)
 	if(key != null) {
+	    // display confirmation dialog here
+	    val builder: AlertDialog.Builder = AlertDialog.Builder(this)
+	    builder
+		.setMessage(getString(R.string.share_confirm,
+				      URLDecoder.decode(key, "UTF-8")))
+		.setNegativeButton(R.string.no) { d, w  -> finish() }
+		.setNeutralButton(R.string.yes) { d, w -> doSaveFileTo(key) }
+		.setPositiveButton(R.string.always) {
+		    d, w ->
+		    /* Todo: actually store "always" response somewhere */
+		    Log.i(TAG, "Always")
+		    doSaveFileTo(key)
+		}
+		.show();
+
+	} else
+	    launchPicker()
+    }
+
+    fun doSaveFileTo(key: String) {
 	    val uri=Uri.parse(key)
 	    addOrRefreshShortcut(uri,false)
 	    saveFileTo(uri)
-	} else
-	    launchPicker()
     }
 
     fun launchPicker() {
