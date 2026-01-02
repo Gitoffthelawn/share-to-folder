@@ -11,6 +11,7 @@ constraintlayout = "2.2.1"
 navigationFragmentKtx = "2.9.6"
 navigationUiKtx = "2.9.6"
 documentfile = "1.1.0"
+androidxRoom = "2.8.4"
 
 [libraries]
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
@@ -23,6 +24,8 @@ androidx-constraintlayout = { group = "androidx.constraintlayout", name = "const
 androidx-navigation-fragment-ktx = { group = "androidx.navigation", name = "navigation-fragment-ktx", version.ref = "navigationFragmentKtx" }
 androidx-navigation-ui-ktx = { group = "androidx.navigation", name = "navigation-ui-ktx", version.ref = "navigationUiKtx" }
 androidx-documentfile = { group = "androidx.documentfile", name = "documentfile", version.ref = "documentfile" }
+androidx-room-rt = { group = "androidx.room", name = "room-runtime", version.ref = "androidxRoom" }
+androidx-room-ksp = { group = "androidx.room", name = "room-compiler", version.ref = "androidxRoom" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }
