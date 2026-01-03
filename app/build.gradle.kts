@@ -49,6 +49,9 @@ android {
             jvmTarget = JvmTarget.JVM_11
 	}
     }
+    ksp {
+        arg("room.schemaLocation", "$projectDir/schemas")
+    }
     buildFeatures {
         viewBinding = true
     }
