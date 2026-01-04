@@ -1,6 +1,5 @@
 package lu.knaff.alain.share_to_folder
 
-import java.io.InputStream
 import java.io.OutputStream
 import java.net.URLDecoder
 import android.os.Build
@@ -34,8 +33,8 @@ import kotlinx.coroutines.launch
 class ShareReceiver : AppCompatActivity(), CoroutineScope by MainScope()  {
     private val TAG="ShareReceiver"
 
-    fun getLastPathPart(uri:Uri):String? {
-	val filename=uri.getLastPathSegment()
+    fun getLastPathPart(uri:Uri?):String? {
+	val filename=uri?.getLastPathSegment()
 	if(filename==null)
 	    return null
 	val pos=filename.lastIndexOf('/')
@@ -116,16 +115,15 @@ class ShareReceiver : AppCompatActivity(), CoroutineScope by MainScope()  {
 	    if(o is Uri)
 		srcUri=o
 	}
-	var filename=getLastPathPart(srcUri!!)
+	var filename=getLastPathPart(srcUri)
 	if(filename == null) {
-	    filename="file"
+	    filename="file.txt"
 	}
 
 	launch {
 	    var mimeType:String? = intent.type
 	    if(mimeType=="null")
 		mimeType="text/plain"
-	    val inStream:InputStream =  contentResolver.openInputStream(srcUri)!!
 
 	    val destFile:DocumentFile = DocumentFile
 		.fromTreeUri(this@ShareReceiver, treeUri)
@@ -135,8 +133,19 @@ class ShareReceiver : AppCompatActivity(), CoroutineScope by MainScope()  {
 		contentResolver.openOutputStream(destFile.uri)!!
 
 	    // copy input to output
-	    inStream.copyTo(outStream);
-	    inStream.close()
+	    if(srcUri != null) {
+		val inStream = contentResolver.openInputStream(srcUri)
+		inStream!!.copyTo(outStream);
+		inStream.close()
+	    } else {
+		val subject = intent.getStringExtra(Intent.EXTRA_SUBJECT)
+		if(subject != null)
+		    outStream.write((subject+"\n").toByteArray())
+
+		val text = intent.getStringExtra(Intent.EXTRA_TEXT)
+		if(text != null)
+		    outStream.write((text+"\n").toByteArray())
+	    }
 	    outStream.close()
 	    runOnUiThread { finish() }
 	}
