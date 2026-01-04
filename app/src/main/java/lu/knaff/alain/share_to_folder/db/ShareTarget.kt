@@ -7,6 +7,6 @@ import androidx.room.ColumnInfo
 @Entity(tableName = "share_target")
 data class ShareTarget(
     @PrimaryKey(autoGenerate = true) val uid: Int,
-    @ColumnInfo(name = "uri") val uri: String?,
+    @ColumnInfo(name = "uri") val uri: String,
     @ColumnInfo(name = "always") var always: Boolean
 )

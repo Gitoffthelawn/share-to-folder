@@ -2,11 +2,11 @@
   "formatVersion": 1,
   "database": {
     "version": 1,
-    "identityHash": "5987fc6dbae134bee6d5c585675749ad",
+    "identityHash": "d75c484ffda1d57e783e85915b482c5c",
     "entities": [
       {
         "tableName": "share_target",
-        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`uid` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, `uri` TEXT, `always` INTEGER NOT NULL)",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`uid` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, `uri` TEXT NOT NULL, `always` INTEGER NOT NULL)",
         "fields": [
           {
             "fieldPath": "uid",
@@ -17,7 +17,8 @@
           {
             "fieldPath": "uri",
             "columnName": "uri",
-            "affinity": "TEXT"
+            "affinity": "TEXT",
+            "notNull": true
           },
           {
             "fieldPath": "always",
@@ -36,7 +37,7 @@
     ],
     "setupQueries": [
       "CREATE TABLE IF NOT EXISTS room_master_table (id INTEGER PRIMARY KEY,identity_hash TEXT)",
-      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, '5987fc6dbae134bee6d5c585675749ad')"
+      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, 'd75c484ffda1d57e783e85915b482c5c')"
     ]
   }
 }
