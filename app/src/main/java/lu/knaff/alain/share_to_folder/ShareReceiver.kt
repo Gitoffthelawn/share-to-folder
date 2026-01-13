@@ -20,6 +20,8 @@ import android.graphics.Color
 import android.graphics.Paint
 import android.text.TextPaint
 
+import android.webkit.MimeTypeMap
+
 import androidx.core.net.toUri
 
 import lu.knaff.alain.share_to_folder.db.TheDatabase
@@ -126,11 +128,19 @@ class ShareReceiver : AppCompatActivity(), CoroutineScope by MainScope()  {
 	    filename="file.txt"
 	}
 
-	launch {
-	    var mimeType:String? = intent.type
-	    if(mimeType=="null")
-		mimeType="text/plain"
+	var mimeType:String? = intent.type
+	if(mimeType=="null")
+	    mimeType="text/plain"
 
+	if(filename.indexOf('.')==-1) {
+	    // filename contains no dot, append extension according to mime type
+	    val ext: String? = MimeTypeMap
+		.getSingleton()
+		.getExtensionFromMimeType(mimeType)
+	    filename = filename + "."+ext
+	}
+
+	launch {
 	    val destFile:DocumentFile = DocumentFile
 		.fromTreeUri(this@ShareReceiver, treeUri)
 		?.createFile(mimeType!!,filename)!!
