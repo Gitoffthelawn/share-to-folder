@@ -1,9 +1,10 @@
 package lu.knaff.alain.share_to_folder
 
-import java.io.OutputStream
+import java.io.FileNotFoundException
 import java.net.URLDecoder
 import android.os.Build
 
+import android.util.Log
 import android.os.Bundle
 import android.content.Intent
 import android.app.AlertDialog
@@ -115,6 +116,18 @@ class ShareReceiver : AppCompatActivity(), CoroutineScope by MainScope()  {
 	    .getOrCreate(treeUri.toString())
     }
 
+    fun error(msg: String) {
+	runOnUiThread {
+	    AlertDialog
+		.Builder(this@ShareReceiver)
+		.setMessage(getString(R.string.error, msg))
+		.setPositiveButton(R.string.ok) {
+		    d, w -> finish()
+		}
+		.show();
+	}
+    }
+
     fun saveFileTo(treeUri:Uri) {
 	var srcUri:Uri? = intent.getData()
 	if(srcUri==null) {
@@ -129,7 +142,7 @@ class ShareReceiver : AppCompatActivity(), CoroutineScope by MainScope()  {
 	}
 
 	var mimeType:String? = intent.type
-	if(mimeType=="null")
+	if(mimeType==null || mimeType=="null")
 	    mimeType="text/plain"
 
 	if(filename.indexOf('.')==-1) {
@@ -141,29 +154,46 @@ class ShareReceiver : AppCompatActivity(), CoroutineScope by MainScope()  {
 	}
 
 	launch {
-	    val destFile:DocumentFile = DocumentFile
-		.fromTreeUri(this@ShareReceiver, treeUri)
-		?.createFile(mimeType!!,filename)!!
+	    try {
+		val directory = DocumentFile
+		    .fromTreeUri(this@ShareReceiver, treeUri)
+		if(directory==null)
+		    throw FileNotFoundException("Could not open directory "+treeUri)
 
-	    val outStream:OutputStream =
-		contentResolver.openOutputStream(destFile.uri)!!
+		val destFile = directory.createFile(mimeType,filename)
+		if(destFile==null)
+		    throw FileNotFoundException("Could not create file "+filename)
 
-	    // copy input to output
-	    if(srcUri != null) {
-		val inStream = contentResolver.openInputStream(srcUri)
-		inStream!!.copyTo(outStream);
-		inStream.close()
-	    } else {
-		val subject = intent.getStringExtra(Intent.EXTRA_SUBJECT)
-		if(subject != null)
-		    outStream.write((subject+"\n").toByteArray())
+		val outStream = contentResolver.openOutputStream(destFile.uri)
+		if(outStream == null)
+		    throw FileNotFoundException("Could not create output stream for "+
+						    filename)
 
-		val text = intent.getStringExtra(Intent.EXTRA_TEXT)
-		if(text != null)
-		    outStream.write((text+"\n").toByteArray())
+		// copy input to output
+		if(srcUri != null) {
+		    val inStream = contentResolver.openInputStream(srcUri)
+		    if(inStream==null)
+			throw FileNotFoundException("Could not read "+srcUri)
+		    inStream.copyTo(outStream);
+		    inStream.close()
+		} else {
+		    val subject = intent.getStringExtra(Intent.EXTRA_SUBJECT)
+		    if(subject != null)
+			outStream.write((subject+"\n").toByteArray())
+
+		    val text = intent.getStringExtra(Intent.EXTRA_TEXT)
+		    if(text != null)
+			outStream.write((text+"\n").toByteArray())
+		}
+		outStream.close()
+		runOnUiThread { finish() }
+	    } catch(e: Exception) {
+		Log.e(TAG, "Exception while saving "+filename, e)
+		var t : Throwable = e
+		while(t.cause != null)
+		    t = t.cause!!
+		error(t.toString())
 	    }
-	    outStream.close()
-	    runOnUiThread { finish() }
 	}
     }
 
