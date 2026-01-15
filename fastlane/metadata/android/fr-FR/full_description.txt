@@ -1,0 +1,12 @@
+Cette application "partage vers un dossier" est une cible de partage qui enregistre les éléments partagés avec elle dans un dossier.
+
+Il s'agit d'un compagnon pratique pour des applications qui permettent uniquement de partager des données, mais pas de les enregistrer. Elle est également utile avec les applications dont l'interface utilisateur est plus pratique pour le partage que pour l'enregistrement ou la copie. Par exemple, dans la galerie photos, vous pouvez facilement utiliser le partage pour trier les photos en seulement deux clics par photo, alors que copier serait plus fastidieux.
+
+
+* Aucun droit root n'est nécessaire
+
+* Les dossiers vers lesquels vous avez partagé des documents au moins une fois sont mémorisés sous forme de raccourcis
+
+* Pour des raisons de sécurité, le partage vers un dossier raccourci déclenche une boîte de dialogue de confirmation, mais vous pouvez répondre « Always » (toujours autoriser) si le dossier cible n'est pas critique en termes de sécurité.
+
+* Vous pouvez parcourir votre liste de dossiers récemment partagés dans l'activité principale de l'application. Les dossiers qui nécessitent une confirmation pour être partagés sont indiqués en rouge, et ceux pour lesquels vous avez répondu « Toujours » sont indiqués en vert. Vous pouvez supprimer la pré-autorisation si vous avez cliqué accidentellement sur « Toujours » ou si vous avez changé d'avis.
