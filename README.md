@@ -14,7 +14,7 @@ It is a convenient companion to apps that only allow to share data, but not to s
 
 ## Installation
 
-Download and install the latest app from the [release section](https://github.com/AlainKnaff/share-to-folder/releases)
+Download and install the latest app from the [release section](releases)
 
 However, you may also compile it yourself:
 
