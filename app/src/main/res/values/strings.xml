@@ -2,7 +2,7 @@
     <string name="app_name">Share to Folder</string>
 
     <string name="share_confirm">OK to share to %1$s?</string>
-    <string name="error">An error occurred while saving file: %1$s?</string>
+    <string name="error">An error occurred while saving file: %1$s</string>
 
     <string name="yes">Yes</string>
     <string name="no">No</string>
