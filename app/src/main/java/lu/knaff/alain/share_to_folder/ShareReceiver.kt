@@ -63,7 +63,7 @@ class ShareReceiver : AppCompatActivity(), CoroutineScope by MainScope()  {
 	    contentResolver
 		.takePersistableUriPermission(treeUri,
 					      Intent.FLAG_GRANT_READ_URI_PERMISSION  or
-					      Intent.FLAG_GRANT_WRITE_URI_PERMISSION );
+					      Intent.FLAG_GRANT_WRITE_URI_PERMISSION )
 	val uriString:String=treeUri.toString()
 	var shortLabel=getLastPathPart(treeUri)
 	if(shortLabel==null)
@@ -75,13 +75,13 @@ class ShareReceiver : AppCompatActivity(), CoroutineScope by MainScope()  {
 	val textPaint = TextPaint()
 	textPaint.setTextSize(66f)
 	textPaint.setTextAlign(Paint.Align.CENTER)
-	textPaint.setColor(Color.BLACK);
-	val bits = Bitmap.createBitmap(108, 108, Bitmap.Config.ARGB_8888);
+	textPaint.setColor(Color.BLACK)
+	val bits = Bitmap.createBitmap(108, 108, Bitmap.Config.ARGB_8888)
 	val canvas = Canvas(bits)
 	canvas.drawCircle(54f,54f,50f, paint)
 
 	try {
-	    val authority = treeUri.authority!!;
+	    val authority = treeUri.authority!!
 	    val docs=authority.lastIndexOf(".documents")
 	    val idx= if(docs > 0)
 		authority.lastIndexOf('.', docs-1)
@@ -91,7 +91,7 @@ class ShareReceiver : AppCompatActivity(), CoroutineScope by MainScope()  {
 		authority.substring(0,1)
 	    else
 		authority.substring(idx+1,idx+2)
-	    canvas.drawText(letter.uppercase(), 54f, 78f, textPaint);
+	    canvas.drawText(letter.uppercase(), 54f, 78f, textPaint)
 	} catch(e : Exception) {
 	    // if an exception occurs, just don't draw any text...
 	}
@@ -134,11 +134,33 @@ class ShareReceiver : AppCompatActivity(), CoroutineScope by MainScope()  {
 		.setPositiveButton(R.string.ok) {
 		    d, w -> finish()
 		}
-		.show();
+		.show()
 	}
     }
 
     fun saveFileTo(treeUri:Uri) {
+        launch {
+	    try {
+                if(intent.action == Intent.ACTION_SEND) {
+                    saveOneFileTo(treeUri)
+                } else if(intent.action == Intent.ACTION_SEND_MULTIPLE) {
+                    saveMultipleFilesTo(treeUri)
+                } else {
+                    throw IllegalArgumentException("Intent "+intent.action+
+                                                       "not supported")
+                }
+                runOnUiThread { finish() }
+	    } catch(e: Exception) {
+		Log.e(TAG, "Exception while saving shared data", e)
+		var t : Throwable = e
+		while(t.cause != null)
+		    t = t.cause!!
+		error(t.toString())
+            }
+        }
+    }
+
+    fun saveOneFileTo(treeUri:Uri) {
 	var srcUri:Uri? = intent.getData()
 	if(srcUri==null) {
 	    val o:Any?=
@@ -146,6 +168,19 @@ class ShareReceiver : AppCompatActivity(), CoroutineScope by MainScope()  {
 	    if(o is Uri)
 		srcUri=o
 	}
+        saveFileTo(treeUri, srcUri)
+    }
+
+    fun saveMultipleFilesTo(treeUri:Uri) {
+        val list: Collection<Any> = @Suppress("DEPRECATION") intent.getParcelableArrayListExtra(Intent.EXTRA_STREAM)!!
+        for(srcUri in list)
+            if(srcUri is Uri)
+                saveFileTo(treeUri, srcUri)
+            else
+                Log.i(TAG, "Ignoring "+srcUri+" which is not a Uri")
+    }
+
+    fun saveFileTo(treeUri:Uri, srcUri: Uri?) {
 	var filename=getLastPathPart(srcUri)
 	if(filename == null) {
 	    filename="file.txt"
@@ -163,48 +198,37 @@ class ShareReceiver : AppCompatActivity(), CoroutineScope by MainScope()  {
 	    filename = filename + "."+ext
 	}
 
-	launch {
-	    try {
-		val directory = DocumentFile
-		    .fromTreeUri(this@ShareReceiver, treeUri)
-		if(directory==null)
-		    throw FileNotFoundException("Could not open directory "+treeUri)
+	val directory = DocumentFile
+	    .fromTreeUri(this@ShareReceiver, treeUri)
+	if(directory==null)
+	    throw FileNotFoundException("Could not open directory "+treeUri)
 
-		val destFile = directory.createFile(mimeType,filename)
-		if(destFile==null)
-		    throw FileNotFoundException("Could not create file "+filename)
+	val destFile = directory.createFile(mimeType,filename)
+	if(destFile==null)
+	    throw FileNotFoundException("Could not create file "+filename)
 
-		val outStream = contentResolver.openOutputStream(destFile.uri)
-		if(outStream == null)
-		    throw FileNotFoundException("Could not create output stream for "+
-						    filename)
+	val outStream = contentResolver.openOutputStream(destFile.uri)
+	if(outStream == null)
+	    throw FileNotFoundException("Could not create output stream for "+
+					    filename)
 
-		// copy input to output
-		if(srcUri != null) {
-		    val inStream = contentResolver.openInputStream(srcUri)
-		    if(inStream==null)
-			throw FileNotFoundException("Could not read "+srcUri)
-		    inStream.copyTo(outStream);
-		    inStream.close()
-		} else {
-		    val subject = intent.getStringExtra(Intent.EXTRA_SUBJECT)
-		    if(subject != null)
-			outStream.write((subject+"\n").toByteArray())
+	// copy input to output
+	if(srcUri != null) {
+	    val inStream = contentResolver.openInputStream(srcUri)
+	    if(inStream==null)
+		throw FileNotFoundException("Could not read "+srcUri)
+	    inStream.copyTo(outStream)
+	    inStream.close()
+	} else {
+	    val subject = intent.getStringExtra(Intent.EXTRA_SUBJECT)
+	    if(subject != null)
+		outStream.write((subject+"\n").toByteArray())
 
-		    val text = intent.getStringExtra(Intent.EXTRA_TEXT)
-		    if(text != null)
-			outStream.write((text+"\n").toByteArray())
-		}
-		outStream.close()
-		runOnUiThread { finish() }
-	    } catch(e: Exception) {
-		Log.e(TAG, "Exception while saving "+filename, e)
-		var t : Throwable = e
-		while(t.cause != null)
-		    t = t.cause!!
-		error(t.toString())
-	    }
+	    val text = intent.getStringExtra(Intent.EXTRA_TEXT)
+	    if(text != null)
+		outStream.write((text+"\n").toByteArray())
 	}
+	outStream.close()
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -233,8 +257,8 @@ class ShareReceiver : AppCompatActivity(), CoroutineScope by MainScope()  {
 		    dao.setAlways(key, true)
 		    doSaveFileTo(key)
 		}
-		.show();
-	    return;
+		.show()
+	    return
 	}
 
 	doSaveFileTo(key)
