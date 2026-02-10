@@ -101,9 +101,9 @@ class MainActivity : Activity() {
 	    holder.view.setBackgroundColor(ContextCompat
 					       .getColor(this@MainActivity,
 							 if(always)
-							     R.color.lightgreen
+							     R.color.greenbg
 							 else
-							     R.color.lightred))
+							     R.color.redbg))
 
 	}
 
